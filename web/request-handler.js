@@ -35,13 +35,28 @@ exports.handleRequest = function (req, res) {
 
     req.on('end', function() {
       site = site.split('=');
-      fs.appendFile(archive.paths.list, site[1] + '\n', function(err) {
-        if (err) { throw err; }
-        res.writeHead(302, null);
-        res.end();
+      res.writeHead(302, null);
+      archive.isUrlInList(site[1], function(exists) {
+        if (exists) {
+          archive.isUrlArchived(site[1], function(exists) {
+            if (exists) {
+              fs.readFile(archive.paths.archivedSites + '/' + site[1], function(error, data) {
+                if (error) { throw error; }
+                res.end(data);
+              }); 
+            } else {
+              helpers.serveAssets(res, '/loading.html');  
+            }
+          });
+        } else {
+          archive.addUrlToList(site[1], function() {
+            console.log('site', site[1], ' was added to list');
+            helpers.serveAssets(res, '/loading.html');
+          });
+          
+        }
       });
     });
 
   }
-  // res.end(archive.paths.list);
 };
