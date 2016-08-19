@@ -5,6 +5,7 @@ var archive = require('../helpers/archive-helpers');
 var path = require('path');
 var supertest = require('supertest');
 var initialize = require('../web/initialize.js');
+var worker = require('../workers/htmlfetcher.js');
 
 initialize(path.join(__dirname, '/testdata'));
 
@@ -73,7 +74,7 @@ describe('server', function() {
           });
       });
     });
-  });
+  }); 
 });
 
 describe('archive helpers', function() {
@@ -157,6 +158,40 @@ describe('archive helpers', function() {
         expect(fs.readdirSync(archive.paths.archivedSites)).to.deep.equal(urlArray);
         done();
       }, 500);
+    });
+  });
+});
+
+describe('worker', function() {
+  describe('node worker/htmlfetcher.js', function () {
+    it('download new sites from \'sites.txt\'', function (done) {
+      worker.htmlFetcher();
+
+      var counter = 0;
+      var total = 2;
+
+      setTimeout(function() {
+
+        archive.isUrlArchived('example1.com')
+        .then(function (exists) {
+          expect(exists).to.be.true;
+          if (++counter === total) { done(); }
+        });
+
+        archive.isUrlArchived('example2.com')
+        .then(function (exists) {
+          expect(exists).to.be.true;
+          if (++counter === total) { done(); }
+        });
+
+        // archive.isUrlArchived('amazon.com')
+        // .then(function (exists) {
+        //   expect(exists).to.be.false;
+        //   if (++counter === total) { done(); }
+        // });
+
+      }, 500);
+
     });
   });
 });

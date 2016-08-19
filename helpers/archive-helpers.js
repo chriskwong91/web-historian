@@ -69,7 +69,7 @@ exports.isUrlArchived = function(url) {
 exports.downloadUrls = function(urlArray) {
   urlArray.forEach(function(url, index) {
     request('http://' + url, function (error, response, body) {
-      if (error) { console.log(error); }
+      if (error) { return; }
       fs.writeFile(exports.paths.archivedSites + '/' + url, body, function(err) {
         if (err) { throw err; }
       });
